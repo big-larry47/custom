@@ -128,7 +128,7 @@ const SupportAssistant = () => {
   };
 
   const handleEmailClick = () => {
-    window.location.href = "mailto:sarahjenkins.cbp@gmail.com?subject=Customs%20Clearance%20Assistance";
+    window.location.href = "mailto:sarah@customsrealease.org?subject=Customs%20Clearance%20Assistance";
   };
 
   const handleBookSubmit = (e: React.FormEvent) => {
