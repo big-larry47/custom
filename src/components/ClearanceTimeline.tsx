@@ -52,20 +52,11 @@ const ClearanceTimeline = ({
   const [selectedStage, setSelectedStage] = useState<TimelineStage | null>(null);
 
   // Reversing the array puts the newest/latest steps at the top
-  const descendingStages = [...stages]
-    .map((stage) => {
-      if (stage.label.toLowerCase().includes("physical inspection") || stage.label.toLowerCase().includes("declaration")) {
-        return { ...stage, status: "completed" as const };
-      }
-      if (stage.label.toLowerCase().includes("documentation verification") || stage.label.toLowerCase().includes("compliance")) {
-        return { ...stage, status: "paused" as const };
-      }
-      return stage;
-    })
-    .reverse();
+  const descendingStages = [...stages].reverse();
 
-  // Smart logic: The "Current" stage is the first one that isn't completed or pending
-  const currentStageId = descendingStages.find(s => s.status === "paused")?.id;
+  // Smart logic: Finds the first paused stage. If none, finds the most recently completed stage. 
+  const currentStageId = descendingStages.find(s => s.status === "paused")?.id 
+    || descendingStages.find(s => s.status === "completed")?.id;
 
   return (
     <>
@@ -75,8 +66,9 @@ const ClearanceTimeline = ({
           const Icon = config.icon;
           const isLastItem = i === descendingStages.length - 1;
           
-          const isClearancePending = stage.label === "Clearance Approval" && stage.status === "pending";
           const isCurrent = stage.id === currentStageId;
+          const isClearancePending = stage.status === "pending";
+          const themeColor = stage.status === "paused" ? "warning" : "success";
           
           const hideBadge = isClearancePending;
           const disabledClass = isClearancePending ? "opacity-50 pointer-events-none" : "";
@@ -85,17 +77,17 @@ const ClearanceTimeline = ({
             <div 
               key={stage.id} 
               onClick={() => !isClearancePending && setSelectedStage(stage)}
-              className={`flex gap-4 transition-all duration-300 md:cursor-default cursor-pointer active:bg-secondary/50 rounded-lg p-2 -ml-2 ${disabledClass} ${isCurrent ? "bg-warning/5" : ""}`}
+              className={`flex gap-4 transition-all duration-300 md:cursor-default cursor-pointer active:bg-secondary/50 rounded-lg p-2 -ml-2 ${disabledClass} ${isCurrent ? `bg-${themeColor}/5` : ""}`}
             >
               {/* Timeline Connector */}
               <div className="flex flex-col items-center">
                 <div className="relative flex items-center justify-center pt-1">
                   {/* The "Pulse" Visual Clue */}
                   {isCurrent && (
-                    <span className="absolute inset-0 rounded-full bg-warning animate-ping opacity-20" />
+                    <span className={`absolute inset-0 rounded-full bg-${themeColor} animate-ping opacity-20`} />
                   )}
                   
-                  <div className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center shrink-0 border-4 border-background ${config.dotClass} ${isCurrent ? "ring-2 ring-warning/30" : ""}`}>
+                  <div className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center shrink-0 border-4 border-background ${config.dotClass} ${isCurrent ? `ring-2 ring-${themeColor}/30` : ""}`}>
                     <Icon className={`h-5 w-5 ${isCurrent ? "animate-pulse" : ""}`} />
                   </div>
                 </div>
@@ -108,7 +100,7 @@ const ClearanceTimeline = ({
               {/* Content Area */}
               <div className={`pb-8 pt-1.5 ${isLastItem ? "pb-0" : ""}`}>
                 <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <h4 className={`font-semibold ${isCurrent ? "text-warning-foreground" : "text-foreground"}`}>
+                  <h4 className={`font-semibold ${isCurrent ? `text-${themeColor}-foreground` : "text-foreground"}`}>
                     {stage.label}
                   </h4>
                   
@@ -120,8 +112,8 @@ const ClearanceTimeline = ({
                   
                   {/* Extra indicator text for clarity */}
                   {isCurrent && (
-                    <span className="text-[10px] uppercase tracking-wider font-bold text-warning animate-pulse">
-                      • Active Action
+                    <span className={`text-[10px] uppercase tracking-wider font-bold animate-pulse text-${themeColor}`}>
+                      • {stage.status === "paused" ? "Action Required" : "Recently Completed"}
                     </span>
                   )}
                 </div>
@@ -130,8 +122,8 @@ const ClearanceTimeline = ({
                   {stage.description}
                 </p>
                 
-                {/* Visual cue on mobile that there is more to see, ONLY shown on the current step */}
-                {isCurrent && (
+                {/* Visual cue on mobile that there is more to see */}
+                {isCurrent && activities.length > 0 && (
                   <p className="text-xs text-primary font-medium mt-2 md:hidden opacity-80">
                     Tap to view details
                   </p>
@@ -178,8 +170,8 @@ const ClearanceTimeline = ({
                 </div>
               </div>
 
-              {/* Activity Log (Only shows for Legal Documentation Verification or if activities exist) */}
-              {selectedStage.label === "Legal Documentation Verification" && activities.length > 0 && (
+              {/* Activity Log */}
+              {(selectedStage.label === "Clearance Approval" || selectedStage.label === "Legal Documentation Verification") && activities.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -196,7 +188,6 @@ const ClearanceTimeline = ({
                       const logStyle = activityStyleMap[log.type] || activityStyleMap.info;
                       const LogIcon = logStyle.icon;
                       
-                      // Highlight action logs specifically
                       const isAction = log.type === "action";
                       const boxStyle = isAction 
                         ? "bg-destructive/5 border-destructive/30 shadow-md ring-1 ring-destructive/10" 

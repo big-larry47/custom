@@ -12,7 +12,6 @@ import { mockShipment } from "@/data/mockShipment";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  // Grab the tracking number from the URL if it exists
   const { trackingNumber } = useParams<{ trackingNumber: string }>();
   const navigate = useNavigate();
   
@@ -20,16 +19,14 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Watch the URL parameter. If it changes or exists on load, run the search.
   useEffect(() => {
     if (trackingNumber) {
       performSearch(trackingNumber);
     } else {
-      setShipment(null); // Clear results if user navigates back to base /track
+      setShipment(null); 
     }
   }, [trackingNumber]);
 
-  // Extracted the actual search logic here
   const performSearch = (query: string) => {
     setIsLoading(true);
     
@@ -52,7 +49,6 @@ const Index = () => {
     }, 1200);
   };
 
-  // Now, the search bar just updates the URL instead of setting state directly
   const handleSearch = (query: string) => {
     if (!query.trim()) return;
     navigate(`/track/${encodeURIComponent(query.trim())}`);
@@ -75,7 +71,6 @@ const Index = () => {
                 </p>
               </div>
             )}
-            {/* Pass the trackingNumber to the search bar so it populates the input field */}
             <SearchBar onSearch={handleSearch} isLoading={isLoading} initialQuery={trackingNumber} />
           </div>
         </section>

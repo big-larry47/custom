@@ -146,14 +146,14 @@ const InspectionGallery = () => {
       <div className="mt-5 flex items-start gap-3 text-sm text-red-900 dark:text-red-200 bg-red-50 dark:bg-red-950/30 p-4 rounded-md border border-red-200 dark:border-red-900 shadow-sm">
         <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5 text-red-600 dark:text-red-500" />
         <p>
-          <strong className="text-red-950 dark:text-red-100">IMPORTANT:</strong> Beneficiary details needed. Please contact your dedicated clearance specialist, or use our{" "}
+          <strong className="text-red-950 dark:text-red-100">ACTION REQUIRED:</strong> Outstanding secure vault storage fees must be settled to finalize clearance. Please contact your dedicated clearance specialist, or use our{" "}
           <button 
             onClick={handleSupportLinkClick} 
             className="font-semibold underline hover:text-red-700 dark:hover:text-red-300 inline-block focus:outline-none"
           >
             support section
           </button>
-          .
+          {" "}for payment instructions.
         </p>
       </div>
 

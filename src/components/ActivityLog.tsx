@@ -19,7 +19,7 @@ const ActivityLog = ({ entries }: { entries: ActivityEntry[] }) => {
         <h3 className="text-lg font-semibold font-display text-foreground">
           Activity Log
           <span className="text-sm font-normal text-muted-foreground ml-2 hidden sm:inline-block">
-            (Legal Documentation Verification)
+            (Clearance Approval)
           </span>
         </h3>
       </div>
