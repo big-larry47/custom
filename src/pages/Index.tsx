@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Package, PauseCircle } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import ShipmentHeader from "@/components/ShipmentHeader";
@@ -8,30 +9,38 @@ import ActivityLog from "@/components/ActivityLog";
 import Header from "@/components/Header";
 import SupportAssistant from "@/components/SupportAssistant";
 import { mockShipment } from "@/data/mockShipment";
-import { useToast } from "@/hooks/use-toast"; // 👈 Imported toast hook for error messages
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  // Grab the tracking number from the URL if it exists
+  const { trackingNumber } = useParams<{ trackingNumber: string }>();
+  const navigate = useNavigate();
+  
   const [shipment, setShipment] = useState<typeof mockShipment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast(); // 👈 Initialize toast
+  const { toast } = useToast();
 
-  const handleSearch = (query: string) => {
-    if (!query.trim()) return;
-    
+  // Watch the URL parameter. If it changes or exists on load, run the search.
+  useEffect(() => {
+    if (trackingNumber) {
+      performSearch(trackingNumber);
+    } else {
+      setShipment(null); // Clear results if user navigates back to base /track
+    }
+  }, [trackingNumber]);
+
+  // Extracted the actual search logic here
+  const performSearch = (query: string) => {
     setIsLoading(true);
     
-    // Clean up the search query (remove extra spaces, ignore case)
     const sanitizedQuery = query.trim().toUpperCase();
     const validEntryNumber = mockShipment.entryNumber.toUpperCase();
     const validReferenceNumber = mockShipment.referenceNumber.toUpperCase();
 
-    // Simulate API call
     setTimeout(() => {
-      // Validate: Does the input match our mock data?
       if (sanitizedQuery === validEntryNumber || sanitizedQuery === validReferenceNumber) {
         setShipment(mockShipment);
       } else {
-        // If it doesn't match, ensure shipment is null and show an error
         setShipment(null);
         toast({
           title: "Shipment Not Found",
@@ -43,14 +52,17 @@ const Index = () => {
     }, 1200);
   };
 
+  // Now, the search bar just updates the URL instead of setting state directly
+  const handleSearch = (query: string) => {
+    if (!query.trim()) return;
+    navigate(`/track/${encodeURIComponent(query.trim())}`);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Reusable Header Component */}
       <Header />
 
-      {/* Main Content Area */}
       <div className="flex-grow">
-        {/* Search section */}
         <section className="bg-secondary/50 border-b border-border">
           <div className="container max-w-5xl mx-auto px-4 py-8 md:py-12">
             {!shipment && (
@@ -63,16 +75,15 @@ const Index = () => {
                 </p>
               </div>
             )}
-            <SearchBar onSearch={handleSearch} isLoading={isLoading} />
+            {/* Pass the trackingNumber to the search bar so it populates the input field */}
+            <SearchBar onSearch={handleSearch} isLoading={isLoading} initialQuery={trackingNumber} />
           </div>
         </section>
 
-        {/* Results */}
         {shipment && (
           <main className="container max-w-5xl mx-auto px-4 py-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <ShipmentHeader shipment={shipment} />
 
-            {/* Inspection Images */}
             <section>
               <h3 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Package className="h-5 w-5 text-muted-foreground" />
@@ -81,12 +92,9 @@ const Index = () => {
               <InspectionGallery />
             </section>
 
-            {/* Two column layout */}
             <div className="grid md:grid-cols-5 gap-8">
-              {/* Timeline */}
               <div className="md:col-span-3">
                 <div className="bg-card rounded-xl border border-border p-6">
-                  {/* Title and Paused Badge */}
                   <div className="flex flex-wrap items-center gap-3 mb-6">
                     <h3 className="text-lg font-display font-semibold text-foreground">
                       Clearance Progress
@@ -101,14 +109,11 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Actions + Activity + Support Assistant */}
               <div className="md:col-span-2 space-y-6">
-                {/* Hidden on mobile, shown on medium screens and up */}
                 <div className="hidden md:block bg-card rounded-xl border border-border p-6">
                   <ActivityLog entries={shipment.activity} />
                 </div>
                 
-                {/* Reusable Support System Component placed right below Activity Log */}
                 <div className="flex justify-center md:justify-start">
                   <SupportAssistant />
                 </div>
@@ -119,12 +124,10 @@ const Index = () => {
         )}
       </div>
 
-      {/* Footer */}
       <footer className="border-t border-border mt-12">
         <div className="container max-w-5xl mx-auto px-4 py-6 text-center">
           <p className="text-xs text-muted-foreground">
             This is a tracking interface for information & official Customs & Border Protection inquiries.
-         
           </p>
         </div>
       </footer>

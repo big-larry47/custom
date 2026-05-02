@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,10 +6,16 @@ import { Input } from "@/components/ui/input";
 interface SearchBarProps {
   onSearch: (query: string) => void;
   isLoading?: boolean;
+  initialQuery?: string; // <-- Added this optional prop
 }
 
-const SearchBar = ({ onSearch, isLoading }: SearchBarProps) => {
-  const [query, setQuery] = useState("");
+const SearchBar = ({ onSearch, isLoading, initialQuery = "" }: SearchBarProps) => {
+  const [query, setQuery] = useState(initialQuery);
+
+  // Keep local state in sync if the URL changes externally
+  useEffect(() => {
+    setQuery(initialQuery || "");
+  }, [initialQuery]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +43,6 @@ const SearchBar = ({ onSearch, isLoading }: SearchBarProps) => {
           {isLoading ? "Searching..." : "Track"}
         </Button>
       </div>
-      
     </form>
   );
 };

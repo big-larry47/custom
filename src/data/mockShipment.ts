@@ -38,7 +38,7 @@ export const mockShipment: ShipmentData = {
   entryNumber: "REF-MIA-04387YF",
   referenceNumber: "CBP-REF-56XXXRUIBGGFGHJJKU",
   origin: "Kelvin Miller",
-  destination: "Quebec, Canada",
+  destination: "Naples, Florida",
   currentLocation: "Miami International Airport",
   beneficiary: "Margaretha Byers.",
   currentStage: "Legal Documentation Verification",
