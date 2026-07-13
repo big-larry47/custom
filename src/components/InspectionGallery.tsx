@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, ChevronLeft, ChevronRight, Play, ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, ChevronLeft, ChevronRight, Play, ChevronDown, ChevronUp, Timer } from "lucide-react";
 
 import inspect1 from "@/assets/inspect1.png";
 import inspect2 from "@/assets/inspect2.png";
@@ -59,9 +59,38 @@ const images: MediaItem[] = [
   },
 ];
 
+// Target date: July 22, 2026 (Midnight UTC)
+const TARGET_DATE = new Date("2026-07-22T00:00:00Z").getTime();
+
 const InspectionGallery = () => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  const calculateTimeLeft = () => {
+    const now = new Date().getTime();
+    const difference = TARGET_DATE - now;
+    return difference > 0 ? Math.floor(difference / 1000) : 0;
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTimeUnits = (seconds: number) => {
+    const d = Math.floor(seconds / (3600 * 24));
+    const h = Math.floor((seconds % (3600 * 24)) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    
+    return { d: pad(d), h: pad(h), m: pad(m), s: pad(s) };
+  };
 
   const openLightbox = (i: number) => setLightboxIndex(i);
   const closeLightbox = () => setLightboxIndex(null);
@@ -76,11 +105,12 @@ const InspectionGallery = () => {
       i !== null ? (i + 1) % images.length : 0
     );
 
-  // CHANGED: Removed the scrollIntoView command so the page stays exactly where it is
   const handleSupportLinkClick = (e: React.MouseEvent) => {
     e.preventDefault();
     window.dispatchEvent(new CustomEvent("open-support-modal"));
   };
+
+  const { d, h, m, s } = formatTimeUnits(timeLeft);
 
   return (
     <>
@@ -97,10 +127,10 @@ const InspectionGallery = () => {
             <div className="absolute inset-0 p-2 flex items-center justify-center bg-white/50 dark:bg-black/20">
                 {img.type === "image" ? (
                 <img
-                    src={img.src}
-                    alt={img.alt}
-                    loading="lazy"
-                    className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                  src={img.src}
+                  alt={img.alt}
+                  loading="lazy"
+                  className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
                 />
                 ) : (
                 <div className="relative w-full h-full flex items-center justify-center">
@@ -142,19 +172,54 @@ const InspectionGallery = () => {
         </button>
       )}
 
-      {/* Official Note */}
-      <div className="mt-5 flex items-start gap-3 text-sm text-red-900 dark:text-red-200 bg-red-50 dark:bg-red-950/30 p-4 rounded-md border border-red-200 dark:border-red-900 shadow-sm">
-        <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5 text-red-600 dark:text-red-500" />
-        <p>
-          <strong className="text-red-950 dark:text-red-100">ACTION REQUIRED:</strong> Outstanding secure vault storage fees must be settled to finalize clearance. Please contact your dedicated clearance specialist, or use our{" "}
-          <button 
-            onClick={handleSupportLinkClick} 
-            className="font-semibold underline hover:text-red-700 dark:hover:text-red-300 inline-block focus:outline-none"
-          >
-            support section
-          </button>
-          {" "}for payment instructions.
-        </p>
+      {/* Official Note / Forfeiture Warning */}
+      <div className="mt-5 flex flex-col md:flex-row items-center md:items-start gap-4 text-sm text-red-900 dark:text-red-200 bg-red-50 dark:bg-red-950/30 p-5 rounded-md border border-red-300 dark:border-red-900 shadow-md">
+        
+        {/* Countdown Timer Block - Modified for Mobile */}
+        <div className="flex flex-col items-center justify-center md:bg-white md:dark:bg-red-950 md:border md:border-red-200 md:dark:border-red-800 md:p-3 md:rounded-md md:shadow-sm shrink-0 md:min-w-[140px] mb-4 md:mb-0">
+          <div className="flex items-center gap-1.5 text-red-600 dark:text-red-500 mb-2">
+            <Timer className="h-5 w-5 md:h-4 md:w-4" />
+            <span className="text-sm md:text-xs font-bold uppercase tracking-wider">Time Remaining</span>
+          </div>
+          
+          <div className="flex items-center gap-2 md:gap-1.5 text-red-700 dark:text-red-400">
+            <div className="flex flex-col items-center">
+              <span className="text-5xl md:text-3xl font-mono font-bold tracking-tight leading-none">{d}</span>
+              <span className="text-[10px] md:text-[9px] font-bold uppercase tracking-widest text-red-600/80 mt-1">Days</span>
+            </div>
+            <span className="text-3xl md:text-2xl font-bold -mt-4 opacity-50 animate-pulse">:</span>
+            <div className="flex flex-col items-center">
+              <span className="text-5xl md:text-3xl font-mono font-bold tracking-tight leading-none">{h}</span>
+              <span className="text-[10px] md:text-[9px] font-bold uppercase tracking-widest text-red-600/80 mt-1">Hrs</span>
+            </div>
+            <span className="text-3xl md:text-2xl font-bold -mt-4 opacity-50 animate-pulse">:</span>
+            <div className="flex flex-col items-center">
+              <span className="text-5xl md:text-3xl font-mono font-bold tracking-tight leading-none">{m}</span>
+              <span className="text-[10px] md:text-[9px] font-bold uppercase tracking-widest text-red-600/80 mt-1">Mins</span>
+            </div>
+            <span className="text-3xl md:text-2xl font-bold -mt-4 opacity-50 animate-pulse">:</span>
+            <div className="flex flex-col items-center">
+              <span className="text-5xl md:text-3xl font-mono font-bold tracking-tight leading-none">{s}</span>
+              <span className="text-[10px] md:text-[9px] font-bold uppercase tracking-widest text-red-600/80 mt-1">Secs</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Details Block */}
+        <div className="flex-1 space-y-3">
+          <div className="flex items-center gap-2 mb-4 md:mb-0">
+            <strong className="text-red-950 dark:text-red-100 text-base md:text-lg">CRITICAL WARNING: FORFEITURE IMMINENT</strong>
+          </div>
+          <p className="leading-relaxed">
+            Request for a storage extension is pending. An Administrative Storage Extension Fee is required before the extension can be processed.
+          </p>
+          <p className="leading-relaxed">
+            Failure to settle this fee before the deadline will result in the forfeiture process proceeding as scheduled.
+          </p>
+          <p className="text-sm leading-relaxed">
+            Payment details have been sent to the beneficiary's registered email address.
+          </p>
+        </div>
       </div>
 
       {/* Lightbox */}

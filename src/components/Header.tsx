@@ -48,14 +48,14 @@ const Header = () => {
     : "translate-y-0";
 
   return (
-    <>
-      {/* Gov Banner remains static at the absolute top of the page */}
+    <div 
+      className={`sticky top-0 z-50 w-full flex flex-col transition-transform duration-300 shadow-sm md:static md:shadow-none ${navVisibilityClass}`}
+    >
+      {/* Gov Banner is now inside the sticky container so it shares the exact same visibility as the header */}
       <GovBanner />
 
-      {/* Main Navigation - Sticky on mobile, auto-hides when idle */}
-      <header 
-        className={`w-full bg-white border-b border-border z-40 sticky top-0 transition-transform duration-300 shadow-sm md:static md:shadow-none ${navVisibilityClass}`}
-      >
+      {/* Main Navigation */}
+      <header className="w-full bg-white border-b border-border">
         <nav className="container max-w-6xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <img 
             src={cbpLogo} 
@@ -87,7 +87,7 @@ const Header = () => {
           </div>
         </nav>
       </header>
-    </>
+    </div>
   );
 };
 
